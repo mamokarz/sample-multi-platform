@@ -1,8 +1,7 @@
 #include <stddef.h>
-#include "bsp.h"
+#include "pal.h"
 
-void bsp_halt(void)
+void pal_halt(void)
 {
     while(1){};
 }
-

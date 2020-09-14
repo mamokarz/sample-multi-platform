@@ -1,8 +1,8 @@
 #include <pthread.h>
 #include <time.h>
-#include "bsp.h"
+#include "pal.h"
 
-void bsp_sleep(unsigned int sleep_time_ms)
+void pal_sleep(unsigned int sleep_time_ms)
 {
     time_t seconds = sleep_time_ms / 1000;
     long remainder_nanoseconds = (sleep_time_ms % 1000) * 1000000;
