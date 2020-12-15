@@ -53,6 +53,7 @@ dkms.conf
 
 # IDE/Compile directories
 .vs/
-cmake-build/
-cmake-ubuntu/
+build/
+cmake-*/
 out/
+CMakeSettings.json

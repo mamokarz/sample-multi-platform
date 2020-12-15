@@ -4,7 +4,7 @@ add_library(monitor
 
 target_include_directories(monitor 
     PUBLIC 
-        ${CMAKE_SOURCE_DIR}/bsp
+        ${CMAKE_SOURCE_DIR}/pal
         ${CMAKE_SOURCE_DIR}/monitor
 )
 

@@ -1,8 +1,8 @@
 #include <windows.h>
 #include <time.h>
-#include "bsp.h"
+#include "pal.h"
 
-void bsp_sleep(unsigned int sleep_time_ms)
+void pal_sleep(unsigned int sleep_time_ms)
 {
     Sleep(sleep_time_ms);
 }
