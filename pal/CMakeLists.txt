@@ -7,7 +7,7 @@ foreach(pal IN LISTS pal_libraries)
     add_library(${pal}
         ${${pal}}
     )
-    target_compile_definitions(${pal} PUBLIC 
+    target_compile_definitions(${pal} PUBLIC
         "PAL_VERSION_MAJOR=${PAL_VERSION_MAJOR}"
         "PAL_VERSION_MINOR=${PAL_VERSION_MINOR}"
         "PAL_VERSION_PATCH=${PAL_VERSION_PATCH}")

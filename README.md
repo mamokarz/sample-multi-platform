@@ -1,8 +1,26 @@
 # sample-multi-platform
 
-## THIS REPO IS UNDER CONSTRUCTION.
+## THIS REPO IS UNDER CONSTRUCTION
 
-The goal of this repository is to demonstrate how a cmake project can create multiple executables for different platforms, and test the consistence of the code generated for each platform.
+The goal of this repository is to demonstrate how a cmake project can create multiple executables for different platforms, and test the consistency of the code generated for each platform.
+
+## Table of Contents
+- [sample-multi-platform](#sample-multi-platform)
+  - [THIS REPO IS UNDER CONSTRUCTION](#this-repo-is-under-construction)
+  - [Table of Contents](#table-of-contents)
+  - [Development Machine Requirements](#development-machine-requirements)
+  - [Building the Repo](#building-the-repo)
+  - [Introduction](#introduction)
+  - [Scenario](#scenario)
+    - [Hardware](#hardware)
+  - [PAL [Platform Abstraction Layer]](#pal-platform-abstraction-layer)
+    - [PAL Interface](#pal-interface)
+    - [PAL Implementation](#pal-implementation)
+    - [Creating the PAL Libraries](#creating-the-pal-libraries)
+  - [Using the PAL](#using-the-pal)
+    - [Creating the Device](#creating-the-device)
+    - [The Contract](#the-contract)
+  - [Conclusion](#conclusion)
 
 ## Development Machine Requirements
 
@@ -21,6 +39,7 @@ It should return the current cmake version.
     ```bash
     git clone https://github.com/mamokarz/sample-multi-platform.git
     ```
+
 2. Go inside of the directory sample-multi-platform and create a new directory
 
     ```bash
@@ -43,15 +62,19 @@ It should return the current cmake version.
 
 5. It generated a few executables, you can directly execute it, for example.
     * Linux
+
         ```bash
         ./device/device_pal_config_1
         ```
+
     * Windows
+
         ```bash
         device/Debug/device_pal_config_1.exe
         ```
 
     The result shall looks like
+
     ```bash
     This is the real pal_temperature_get for device A
     My current PAL version is 0.1.0
@@ -70,33 +93,33 @@ It should return the current cmake version.
 
 ## Introduction
 
-In the IoT world, the ability to have a code that can target multiple hardware, with different configurations and different OS [Operational System] is crucial. For example, a refrigerator may cost from hundreds to thousands of Dollars, it may contain a 20 inches display, a small LDC display or no display at all, and it may use a full-blown CPU running a flavor of Linux or a small MCU running a RTOS. No matter these differences, some code may be reused on all of these devices, for example, the main business logic or the code that connects those devices to the cloud. 
+In the IoT world, the ability to have code that can target multiple hardware, with different configurations and different OS [Operating System] is crucial. For example, a refrigerator may cost from hundreds to thousands of dollars, it may contain a 20 inches display, a small LCD display or no display at all, and it may use a full-blown CPU running a flavor of Linux or a small MCU running an RTOS. No matter these differences, some code may be reused on all of these devices, for example, the main business logic or the code that connects those devices to the cloud.
 
 The goal of this sample is to show how a single cmake project can create multiple libraries with different configurations, test it against a set of compliance tests, and generate multiple executables, each of them targeting a different platform.
 
 ## Scenario
 
-To demonstrate the using of cmake targeting multiple platforms, let’s suppose the following scenario:
+To demonstrate the usage of cmake targeting multiple platforms, let’s suppose the following scenario:
 
-A system shall read a temperature sensor every second and change a LED color and a fan speed, depending on the current temperature. The LED shall be green if the temperature is between -10c and 80c, yellow if between -38c and -10c or 60c to 80c, or red if the temperature is lower than -38c or higher than 80c. If the temperature bypasses 120c or the device cannot read the temperature, the system shall turn off the fan, change the LED to red, and halt itself to avoid further damages. The fan speed shall be set as 10 times the temperature in celsius, so, it shall be capable to run on both direction, with speed between 1 RPM to 1200 RPM clockwise and 1 RPM to 400 RPM anticlockwise.
+A system shall read a temperature sensor every second and change an LED color and a fan speed, depending on the current temperature. The LED shall be green if the temperature is between -10c and 80c, yellow if between -38c and -10c or 60c to 80c, or red if the temperature is lower than -38c or higher than 80c. If the temperature bypasses 120c or the device cannot read the temperature, the system shall turn off the fan, change the LED to red, and halt itself to avoid further damages. The fan speed shall be set as 10 times the temperature in celsius, so, it shall be capable to run on both direction, with speed between 1 RPM to 1200 RPM clockwise and 1 RPM to 400 RPM anticlockwise.
 
 ### Hardware
 
-The system can be deployed using three different boards that uses a CPU that can run Linux or Windows. The code use an OS dependent API to sleep for 1 second, it will use `sleep()`, defined in _windows.h_, for Windows, and `nanosleep()`, defined in _pthread.h_, for Linux. 
+The system can be deployed using three different boards that uses a CPU that can run Linux or Windows. The code use an OS dependent API to sleep for 1 second, it will use `sleep()`, defined in _windows.h_, for Windows, and `nanosleep()`, defined in _pthread.h_, for Linux.
 
-The main differences between these boards are the fan and the temperature sensor, the first board contains the temperature sensor type `A` and the fan `A`. The second board contains the temperature sensor type `B` and the fan `B`. The third board contains the temperature sensor type `B` and the fan `C`. The APIs for sensors and fan are different, so an adapter layer is required.
+The main differences between these boards are the fan and the temperature sensor, the first board contains the temperature sensor type `A` and the fan `A`. The second board contains the temperature sensor type `B` and the fan `B`. The third board contains the temperature sensor type `B` and the fan `C`. The APIs for sensors and fans are different, so an adapter layer is required.
 
-All boards may use both OSs, which means that each of OS shall create 3 different executables, one for each board. So, in total, the cmake project shall be able to create 6 different executables. 
+All boards may use both OSs, which means that each OS shall create 3 different executables, one for each board. So, in total, the cmake project shall be able to create 6 different executables.
 
 ## PAL [Platform Abstraction Layer]
 
-Because software and hardware manufactories normally defines their own APIs (for example `sleep()` and `nanosleep()`), it became necessary to have an adapter layer that will unify all APIs in a single set that our business logic understand.
+Because software and hardware manufacturers normally define their own APIs (for example `sleep()` and `nanosleep()`), it becomes necessary to have an adapter layer that will unify all APIs in a single set that our business logic can understand.
 
-On this example, we called the adapter layer as PAL or Platform Abstraction Layer, there are some other similar names like HAL [Hardware Abstraction Layer] or BSP [Board Support Package], they are not exactly the same, however, there is a big overlapping between them. So, for simplicity, we just call it as PAL.
+On this example, we called the adapter layer PAL or Platform Abstraction Layer. There are some other similar names like HAL [Hardware Abstraction Layer] or BSP [Board Support Package] and while they are not exactly the same, there is a big overlap between them. So, for simplicity, we just call it PAL.
 
 ### PAL Interface
 
-As mentioned, no matter the target platform, **the PAL shall always expose the same interface and the same behavior**, doing that, the other parts of the system can be totally agnostic. In this sample, the interface was defined in _pal.h_, and expose the following APIs.
+As mentioned, no matter the target platform, **the PAL shall always expose the same interface and the same behavior**. Doing that, the other parts of the system can be totally agnostic. In this sample, the interface was defined in `pal.h`, and exposes the following APIs.
 
 ```c
 const char* pal_version_get_string(void);
@@ -114,23 +137,23 @@ void pal_halt(void);
 void pal_sleep(unsigned int sleep_time_ms);
 ```
 
-The first four APIs are related to the version, we will explain it latter, after that, two APIs, `pal_temperature_get()`, and `pal_temperature_to_celsius()`, expose the temperature sensor in the board. The `pal_led_set_color()` exposes the LED color and the `pal_fan_set_speed` the fan speed in the board. Those are the board dependent APIs.
+The first four APIs are related to the version which we will explain later. After that, two APIs, `pal_temperature_get()` and `pal_temperature_to_celsius()`, expose the temperature sensor on the board. The `pal_led_set_color()` exposes the LED color and the `pal_fan_set_speed` the fan speed on the board. Those are the board dependent APIs.
 
-The `pal_halt()` expose a way to completely stop the system. In our implementation, it is a simple `while(true){}` that will run forever. However, it shall be part of the PAL because it may not be the best way to halt in other systems, for instance, if a new device will runs on battery, this busy loop is undesirable. 
+The `pal_halt()` exposes a way to completely stop the system. In our implementation, it is a simple `while(true){}` that will run forever. However, it shall be part of the PAL because it may not be the best way to halt in other systems. For instance, if a new device will run on battery, this busy loop is undesirable.
 
 At the end, we have the `pal_sleep()` that is the OS dependent API.
 
 ### PAL Implementation
 
-There are multiple `.c` files with the implementation, each of than related to one part of the implementation for a specific platform. 
+There are multiple `.c` files with the implementation, each of them related to one part of the implementation for a specific platform.
 
-It is important to preserve uniqueness of identifiers in the _translation-units_ (very complicate way to say that we cannot have 2 functions with the same name in the same `.c`). However, there is no limitation about `.c` files that implement the same function, they are all fine since the linker can understand each one it should use when mount the code.
+It is important to preserve uniqueness of identifiers in the _translation-units_ (very complicated way to say that we cannot have 2 functions with the same name in the same `.c`). However, there is no limitation about `.c` files that implement the same function. They are all fine since the linker can understand which one it should use when mounting the code.
 
 #### Board dependencies
 
-To better understand it, let's see the two implementations of the temperature sensor, files _pal_temperature_a.c_ and _pal_temperature_b.c_, both implements the function `pal_temperature_get()`, and you can compile both. 
+To better understand it, let's see the two implementations of the temperature sensor. Files _pal\_temperature\_a.c_ and _pal\_temperature\_b.c_ both implement the function `pal_temperature_get()`, and you can compile both.
 
-From the repo root, create a directory called build and get inside of it.
+From the repo root, create a directory called build and switch inside of it.
 
 ```bash
 mkdir build
@@ -140,17 +163,20 @@ cd build
 Compile both temperature sensor implementation
 
 * Linux
+
     ```bash
     gcc -c ../pal/pal_temperature_a.c
     gcc -c ../pal/pal_temperature_b.c
     ```
+
 * Windows
+
     ```bash
     cl /c ../pal/pal_temperature_a.c
     cl /c ../pal/pal_temperature_b.c
     ```
 
-It will create one object file of each sensor. If you are sharing the same directories between your Linux and Windows machines, it is even fine to build for both platform in the same "_build_" directory, creating 2 `.o`, object file for Linux, and 2 `.obj`, object file for Windows. In this case, it will result in something like:
+It will create one object file for each sensor. If you are sharing the same directories between your Linux and Windows machines, it is even fine to build for both platforms in the same "_build_" directory, creating 2 `.o`, object file for Linux, and 2 `.obj`, object file for Windows. In this case, it will result in something like:
 
 ```bash
 ./
@@ -162,13 +188,13 @@ pal_temperature_b.o
 pal_temperature_b.obj
 ```
 
-To examine the content of the object file use in Linux the command **nm** (a similar information can be extract on Windows using _dumpbin.exe_)
+To examine the content of the object file, use in Linux the command **nm** (similar information can be extracted on Windows using _dumpbin.exe_)
 
 ```bash
 nm pal_temperature_a.o
 ```
 
-The result shall be something like 
+The result shall be something like
 
 ```bash
                  U _GLOBAL_OFFSET_TABLE_
@@ -177,21 +203,21 @@ The result shall be something like
                  U puts
 ```
 
-If you are not familiarized with `nm` command, the `T` represent the symbols with the code in _.text_ area in the object file, or the symbols exported by the object file, and the `U` represent undefined symbols that are expected by the object. 
+If you are not familiar with the `nm` command, the `T` represents the symbols of the code in the _.text_ area in the object file, or the symbols exported by the object file, and the `U` represents undefined symbols that are expected by the object.
 
-It means that the object _pal_temperature_a.o_ export the identifiers `pal_temperature_get`, `pal_temperature_to_celsius` and request the implementation of `puts`. A similar result shall be obtained if you call `nm` for _pal_temperature_b.o_.
+It means that the object _pal\_temperature\_a.o_ exports the identifiers `pal_temperature_get`, `pal_temperature_to_celsius` and requests the implementation of `puts`. A similar result shall be obtained if you call `nm` for _pal\_temperature\_b.o_.
 
 #### OS dependencies
 
-For the parts of the PAL that are OS-dependent, the cmake shall be smart enough to decide each one to build. It is important because the `.c` will have dependencies of the OS libraries, and try to compile it in the wrong platform will result in "No such file or directory" error. 
+For the parts of the PAL that are OS-dependent, the cmake shall be smart enough to decide which one to build. It is important because the `.c` will have dependencies of the OS libraries, and try to compile it. If the wrong platform is selected, it will result in a "No such file or directory" error.
 
-To make it clear, look in the _pal_thread_pthread.c_, it includes _pthread.h_ that is not part of the Windows libraries; similarly, the _pal_thread_windows.c_ includes _windows.h_ that does not exist in Linux. So, build _pal_thread_pthread.c_ in a Linux machine
+To make it clear, look in the _pal\_thread\_pthread.c_. It includes _pthread.h_ that is not part of the Windows libraries; similarly, the _pal\_thread\_windows.c_ includes _windows.h_ that does not exist in Linux. So, building _pal\_thread\_pthread.c_ on a Linux machine
 
 ```bash
 gcc -c ../pal/pal_thread_pthread.c
 ```
 
-shall create "pal_thread_pthread.o". However, execute the similar command on Linux for _pal_thread_windows.c_
+shall create "pal_thread_pthread.o". However, execute the similar command on Linux for _pal\_thread\_windows.c_
 
 ```bash
 gcc -c ../pal/pal_thread_windows.c
@@ -206,13 +232,14 @@ shall result in error.
 compilation terminated.
 ```
 
-Examining the object file created from the compilation of _pal_thread_pthread.c_.
+Examining the object file created from the compilation of _pal\_thread\_pthread.c_.
 
 ```bash
 nm pal_thread_pthread.o
 ```
 
 shall result in,
+
 ```bash
                  U _GLOBAL_OFFSET_TABLE_
                  U __stack_chk_fail
@@ -220,23 +247,23 @@ shall result in,
 0000000000000000 T pal_sleep
 ```
 
-As expected, _pal_thread_pthread.o_ exports `pal_sleep` and request an implementation of `nanosleep`, that shall be provided by the pthread library. 
+As expected, _pal\_thread\_pthread.o_ exports `pal_sleep` and requests an implementation of `nanosleep`, that shall be provided by the pthread library.
 
-#### Other dependencies
+#### Other Dependencies
 
 The system may have other dependencies, for example the way that it halt in case of a critical error. It is better to keep it in the PAL layer, even if the current implementation work for all platforms, it will facilitate change if a new platform requires a different implementation in the future. Better safe than sorry.
 
-### Creating the PAL libraries
+### Creating the PAL Libraries
 
-Up to now, we build our `.c` files directly using _gcc_ or _cl_, and we didn't link it to create a library or a executable. Now, let's move to cmake and create a project that will compile the `.c` files and link the object files creating a static library. Cmake uses _CMakeLists.txt_ to define the project. The PAL _CMakeLists.txt_ shall create 3 libraries, one for each board, and it shall chose the right thread library to compile and link, depending on the OS. 
+Up to now, we build our `.c` files directly using _gcc_ or _cl_, and we didn't link it to create a library or a executable. Now, let's move to cmake and create a project that will compile the `.c` files and link the object files creating a static library. CMake uses `CMakeLists.txt` to define the project. The PAL `CMakeLists.txt` shall create 3 libraries, one for each board, and it shall choose the right thread library to compile and link, depending on the OS.
 
-Cmake is a very powerful tool, for this sample, we will use only the ability to set variables, create projects, and do some glue logic.
+CMake is a very powerful tool. For this sample, we will use only the ability to set variables, create projects, and do some glue logic.
 
-#### Defining libraries using _config.cmake_
+#### Defining Libraries Using config.cmake
 
-The set of `.c` files that will compose each library shall be enough to cover all APIs exposed by the header _pal.h_, in our case, it needs one adapter for the temperature sensor, fan, led, exception, and thread. The definition of these configurations are in the _config.cmake_. A _.cmake_ file is a file that can be included in any _CMakeLists.txt_ to export variables or functions, in this sample, the _config.cmake_ expose the list of configurations and the functions to create samples and tests. 
+The set of `.c` files that will compose each library shall be enough to cover all APIs exposed by the header `pal.h`. In our case, it needs one adapter for the temperature sensor, fan, led, exception, and thread. The definition of these configurations are in the `config.cmake`. A `.cmake` file is a file that can be included in any `CMakeLists.txt` to export variables or functions. In this sample, the `config.cmake` exposes the list of configurations and the functions to create samples and tests.
 
-Observe that we defined all possible configurations in the _config.cmake_, independent of the OS. As a convention, we define configurations `pal_win_x` for windows, and `pal_linux_x` for windows.
+Observe that we defined all possible configurations in the `config.cmake`, independent of the OS. As a convention, we define configurations `pal_win_x` for windows, and `pal_linux_x` for windows.
 
 ```cmake
 list(APPEND pal_win_1
@@ -257,9 +284,9 @@ list(APPEND pal_linux_1
 )
 ```
 
-To define each configurations are valid for each OS, we created a list called `pal_libraries` that contains all libraries that the cmake shall create and test.
+To define which configurations are valid for each OS, we created a list called `pal_libraries` that contains all libraries that the cmake shall create and test.
 
-Cmake has a few build variables, a full documentation can be find at https://cmake.org/documentation/. For the propose of this sample, we will test if the build variable `WIN32` was defined or not (as you can presume, this variable only exist if you are running the cmake in a Windows machine).
+CMake has a few build variables (a full documentation can be find at [https://cmake.org/documentation/](https://cmake.org/documentation/)). For the purpose of this sample, we will test if the build variable `WIN32` was defined or not (as you can presume, this variable only exists if you are running the cmake on a Windows machine).
 
 ```cmake
 if(WIN32)
@@ -279,18 +306,18 @@ endif()
 
 So if `WIN32` is defined, `pal_libraries` will contain _pal_win_1_, _pal_win_2_, and _pal_win_3_, if not, this variable will contain _pal_linux_1_, _pal_linux_2_, and _pal_linux_3_. Other configurations may be necessary, for example, if you are using Clang as your compiler, you will need to make a more complex decision, because Clang uses pthread library on both Linux and Windows. If it is the case, the reliable way is to use the cmake variable `CMAKE_C_COMPILER_ID`.
 
-#### Including _config.cmake_
+#### Including `config.cmake`
 
-For this sample, we decide to include the _config.cmake_ in the root of the cmake project, to do that, we need to add in the `CMAKE_MODULE_PATH` a path to the directory where we stored our own _.cmake_ files, and after that we just need to include the _config_ one.
+For this sample, we decide to include the `config.cmake` in the root of the cmake project, to do that, we need to add in the `CMAKE_MODULE_PATH` a path to the directory where we stored our own `.cmake` files, and after that we just need to include the _config_ one.
 
 ```cmake
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 include(config)
 ```
 
-#### Cmake hierarchy
+#### CMake hierarchy
 
-Cmake works with hierarchy of directories, so, build a _CMakeLists.txt_ will include all _CMakeLists.txt_ included by **add_subdirectory**. The _CMakeLists.txt_ in the root include the PAL, monitor, tests and samples.
+CMake works with hierarchy of directories, so, build a `CMakeLists.txt` will include all `CMakeLists.txt` included by **add_subdirectory**. The `CMakeLists.txt` in the root include the PAL, monitor, tests and samples.
 
 ```cmake
 add_subdirectory(pal)
@@ -301,7 +328,7 @@ add_subdirectory(device)
 
 #### Building libraries
 
-The _CMakeLists.txt_ in the pal directory is responsible to build all the libraries in the `pal_libraries` list, it is done by interacting over the list and calling the cmake command **add_library**.
+The `CMakeLists.txt` in the pal directory is responsible to build all the libraries in the `pal_libraries` list, it is done by interacting over the list and calling the cmake command **add_library**.
 
 ```cmake
 foreach(pal IN LISTS pal_libraries)
@@ -389,7 +416,7 @@ And, at the end, it links all together creating the library, for example, using 
 ar qc lib<mylib>.a <source1>.c.o <source2>.c.o ...
 ```
 
-Cmake will do that for all 3 libraries, resulting in the following files and directories in the _cmake-linux/pal_
+CMake will do that for all 3 libraries, resulting in the following files and directories in the _cmake-linux/pal_
 
 ```bash
     ./
@@ -497,7 +524,7 @@ The `main()` function in the _Device_ implements a simple loop that calls the `t
 
 #### How the add_device() works
 
-Each device that this sample will create shall be composed by one of the PAL libraries, the monitor library, that implements the business logic, and the main object, that contains the infinite loop that will run the system. The device executable is created by the function `add_device()` implemented in _cmake/config.cmake_, which is called by the _CMakeLists.txt_ in the _device_ directory, once for each library pal library in pal_libraries list.
+Each device that this sample will create shall be composed by one of the PAL libraries, the monitor library, that implements the business logic, and the main object, that contains the infinite loop that will run the system. The device executable is created by the function `add_device()` implemented in _cmake/config.cmake_, which is called by the `CMakeLists.txt` in the _device_ directory, once for each library pal library in pal_libraries list.
 
 The `add_device()` will create a new executable named <i>device_{library_name}</i> with one object file created from _main.c_, by calling `add_executable()`.
 
@@ -507,7 +534,7 @@ The `add_device()` will create a new executable named <i>device_{library_name}</
     )
 ```
 
-Cmake will build all `.c` in the add_executable, converting it in a object file, for example, in Linux, the _main.c_ will be builded in _main.c.o_. Those `.c` may need some includes, `target_include_directories()` will point where the include files shall be found.
+CMake will build all `.c` in the add_executable, converting it in a object file, for example, in Linux, the _main.c_ will be builded in _main.c.o_. Those `.c` may need some includes, `target_include_directories()` will point where the include files shall be found.
 
 ```cmake
     target_include_directories(${TARGET_NAME} 
@@ -732,7 +759,7 @@ clang: error: linker command failed with exit code 1 (use -v to see invocation)
 
 ### The Contract
 
-Because the _pal.h_ exposes a single interface for all PAL libraries, there is no need for multiple implementations of the _device_ or the _monitor_. But we should always make sure that the **PAL contract** is respected by both sides, all PAL implementations, and all codes that use it.
+Because the `pal.h` exposes a single interface for all PAL libraries, there is no need for multiple implementations of the _device_ or the _monitor_. But we should always make sure that the **PAL contract** is respected by both sides, all PAL implementations, and all codes that use it.
 
 #### Versioning
 
@@ -745,7 +772,7 @@ To solve this dilemma, a good contract shall have version. A good semantic for a
 2. _minor_: It represents a significant increment in the API, but without breaking changes.
 3. _patch_: Small fix in the code.
 
-This sample uses this semantic, with a single version for all PAL libraries. The version is defined in the _config.cmake_ and passed down to the PAL code using the `target_compile_definitions` in the PAL _CMakeLists.txt_.
+This sample uses this semantic, with a single version for all PAL libraries. The version is defined in the `config.cmake` and passed down to the PAL code using the `target_compile_definitions` in the PAL `CMakeLists.txt`.
 
 ```cmake
     target_compile_definitions(${pal} PUBLIC 
@@ -754,7 +781,7 @@ This sample uses this semantic, with a single version for all PAL libraries. The
         "PAL_VERSION_PATCH=${PAL_VERSION_PATCH}")
 ```
 
-Because version is constant in the PAL, developers may be tented to expose it in the _pal.h_, something like this:
+Because version is constant in the PAL, developers may be tented to expose it in the `pal.h`, something like this:
 
 ```c
 const char* PAL_VERSION_STR = STR(PAL_VERSION_MAJOR) "." \
@@ -762,9 +789,9 @@ const char* PAL_VERSION_STR = STR(PAL_VERSION_MAJOR) "." \
                               STR(PAL_VERSION_PATCH);
 ```
 
-However, the _pal.h_ may be included in the files that will use the library, and it will result in `PAL_VERSION_STR` as part of the _.text_ area of the user of the library not the _.text_ area of the library itself, which is very undesirable.
+However, the `pal.h` may be included in the files that will use the library, and it will result in `PAL_VERSION_STR` as part of the _.text_ area of the user of the library not the _.text_ area of the library itself, which is very undesirable.
 
-To make sure that this sample avoid this bad behavior, the PAL _CMakeLists.txt_ uses `target_compile_definitions` instead of `add_definitions`. In this case, if a developer try to use the version constant directly, for instance the `PAL_VERSION_MAJOR`, the compiler will throw an error because this symbol does not exists outside of the PAL library. 
+To make sure that this sample avoid this bad behavior, the PAL `CMakeLists.txt` uses `target_compile_definitions` instead of `add_definitions`. In this case, if a developer try to use the version constant directly, for instance the `PAL_VERSION_MAJOR`, the compiler will throw an error because this symbol does not exists outside of the PAL library. 
 
 As a result, in the sample, we have the _pal_version.c_ that will expose the version information to the system, keeping this information in the _.text_ area of the library. With it, users may test the PAL version to make sure that it is compatible with their current code.
 
