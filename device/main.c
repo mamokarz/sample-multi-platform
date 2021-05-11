@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for full license information.
+
 #include <stdio.h>
 #include <stddef.h>
 #include "pal.h"
@@ -8,7 +12,7 @@ int main()
     unsigned short temperature;
 
     pal_result result = pal_temperature_get(&temperature);
-    if(result != PAL_OK) return (int)result;
+    if (result != PAL_OK) return (int)result;
 
     float t_c = pal_temperature_to_celsius(temperature);
 
@@ -16,7 +20,7 @@ int main()
 
     printf("My current temperature is %.1fc\r\n", t_c);
 
-    while(1) {
+    while (1) {
         temperature_monitor();
         pal_sleep(1000);
     }

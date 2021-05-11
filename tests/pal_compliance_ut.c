@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for full license information.
+
 #include "pal.h"
 #include <stdio.h>
 
@@ -11,16 +15,16 @@ int pal_temperature_get_success(void) {
     pal_result result = pal_temperature_get(&temperature);
 
     ///assert
-    if(result != PAL_OK) {
+    if (result != PAL_OK) {
         printf("pal_temperature_get return failed. Expected:PAL_OK Actual:%u\r\n\r\n", result);
         return 1;
     }
-    if(temperature == 0xFFFF) {
+    if (temperature == 0xFFFF) {
         printf("pal_temperature_get temperature failed. Expected:different then 0xFF Actual:0xFF\r\n\r\n");
         return 1;
     }
     printf("Succeeded\r\n\r\n");
-    return 0; 
+    return 0;
 }
 
 /** The pal_temperature_get shall return PAL_ERROR_ARG if the temperature pointer is NULL. */
@@ -32,12 +36,12 @@ int pal_temperature_get_with_null_pointer_fail(void) {
     pal_result result = pal_temperature_get(NULL);
 
     ///assert
-    if(result != PAL_ERROR_ARG) {
+    if (result != PAL_ERROR_ARG) {
         printf("pal_temperature_get return failed. Expected:PAL_ERROR_ARG Actual:%u\r\n\r\n", result);
         return 1;
     }
     printf("Succeeded\r\n\r\n");
-    return 0; 
+    return 0;
 }
 
 /** The pal_fan_set_speed shall return PAL_OK for speeds between 1200 and -800. */
@@ -50,12 +54,12 @@ int pal_fan_set_speed_hi_success(void) {
     pal_result result = pal_fan_set_speed(speed_rpm);
 
     ///assert
-    if(result != PAL_OK) {
+    if (result != PAL_OK) {
         printf("pal_fan_set_speed return failed. Expected:PAL_OK Actual:%u\r\n\r\n", result);
         return 1;
     }
     printf("Succeeded\r\n\r\n");
-    return 0; 
+    return 0;
 }
 
 int pal_fan_set_speed_low_success(void) {
@@ -67,12 +71,12 @@ int pal_fan_set_speed_low_success(void) {
     pal_result result = pal_fan_set_speed(speed_rpm);
 
     ///assert
-    if(result != PAL_OK) {
+    if (result != PAL_OK) {
         printf("pal_fan_set_speed return failed. Expected:PAL_OK Actual:%u\r\n\r\n", result);
         return 1;
     }
     printf("Succeeded\r\n\r\n");
-    return 0; 
+    return 0;
 }
 
 /**
@@ -84,10 +88,10 @@ int main(void)
 
     printf("Starting unit tests:\r\n");
 
-    if(pal_temperature_get_success() != 0) count_error++;
-    if(pal_temperature_get_with_null_pointer_fail() != 0) count_error++;
-    if(pal_fan_set_speed_hi_success() != 0) count_error++;
-    if(pal_fan_set_speed_low_success() != 0) count_error++;
+    if (pal_temperature_get_success() != 0) count_error++;
+    if (pal_temperature_get_with_null_pointer_fail() != 0) count_error++;
+    if (pal_fan_set_speed_hi_success() != 0) count_error++;
+    if (pal_fan_set_speed_low_success() != 0) count_error++;
 
     printf("End unit tests with %u errors\r\n", count_error);
 
