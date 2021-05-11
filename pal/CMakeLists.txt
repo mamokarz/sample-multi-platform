@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
 
 ##
 # Create all libraries in the pal_libraries list for the chosen platform.

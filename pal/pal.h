@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for full license information.
 
 #ifndef PAL_H
 #define PAL_H
@@ -57,7 +60,7 @@ const int pal_version_get_patch(void);
 pal_result pal_temperature_get(unsigned short* temperature);
 
 /**
- * @brief  Convert temperature to Celsius 
+ * @brief  Convert temperature to Celsius
  *
  * @param[in]  temperature      The 'unsigned short' with the temperature in a scale from 0 to 65535.
  *
