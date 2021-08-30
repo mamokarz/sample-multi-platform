@@ -75,7 +75,7 @@ It should return the current cmake version.
         device/Debug/device_pal_config_1.exe
         ```
 
-    The result shall looks like
+    The result will look like
 
     ```bash
     This is the real pal_temperature_get for device A
@@ -95,7 +95,7 @@ It should return the current cmake version.
 
 ## Introduction
 
-In the IoT world, the ability to have code that can target multiple hardware, with different configurations and different OS [Operating System] is crucial. For example, a refrigerator may cost from hundreds to thousands of dollars, it may contain a 20 inches display, a small LCD display or no display at all, and it may use a full-blown CPU running a flavor of Linux or a small MCU running an RTOS. No matter these differences, some code may be reused on all of these devices, for example, the main business logic or the code that connects those devices to the cloud.
+In the IoT world, the ability to have code that can target multiple hardware with different configurations and different OS's [Operating Systems] is crucial. For example, a refrigerator may cost hundreds to thousands of dollars, contain a 20 inch display, a small LCD display or no display at all, and it may use a full-blown CPU running a flavor of Linux or a small MCU running an RTOS. Regardless of the complexity of the application, there is bound to be common code that is reused for all devices. For example, the main business logic or the code that connects the devices to the cloud.
 
 The goal of this sample is to show how a single cmake project can create multiple libraries with different configurations, test it against a set of compliance tests, and generate multiple executables, each of them targeting a different platform.
 
@@ -117,11 +117,11 @@ All boards may use both OSs, which means that each OS shall create 3 different e
 
 Because software and hardware manufacturers normally define their own APIs (for example `sleep()` and `nanosleep()`), it becomes necessary to have an adapter layer that will unify all APIs in a single set that our business logic can understand.
 
-On this example, we called the adapter layer PAL or Platform Abstraction Layer. There are some other similar names like HAL [Hardware Abstraction Layer] or BSP [Board Support Package] and while they are not exactly the same, there is a big overlap between them. So, for simplicity, we just call it PAL.
+In this example, we called the adapter layer PAL or Platform Abstraction Layer. There are some other similar names like HAL [Hardware Abstraction Layer] or BSP [Board Support Package] and while they are not exactly the same, there is a big overlap between them. So, for simplicity, we just call it PAL.
 
 ### PAL Interface
 
-As mentioned, no matter the target platform, **the PAL shall always expose the same interface and the same behavior**. Doing that, the other parts of the system can be totally agnostic. In this sample, the interface was defined in `pal.h`, and exposes the following APIs.
+As mentioned before, no matter the target platform, **the PAL shall always expose the same interface and the same behavior**. Doing this, the other parts of the system can be totally agnostic. In this sample, the interface is defined in `pal.h`, and exposes the following APIs.
 
 ```c
 const char* pal_version_get_string(void);
@@ -149,7 +149,7 @@ At the end, we have the `pal_sleep()` that is the OS dependent API.
 
 There are multiple `.c` files with the implementation, each of them related to one part of the implementation for a specific platform.
 
-It is important to preserve uniqueness of identifiers in the _translation-units_ (very complicated way to say that we cannot have 2 functions with the same name in the same `.c`). However, there is no limitation about `.c` files that implement the same function. They are all fine since the linker can understand which one it should use when mounting the code.
+It is important to preserve uniqueness of identifiers in the _translation-units_. In other words, we cannot have 2 functions with the same name in the same `.c`. However, there is no limitation about `.c` files that implement the same function. They are all fine since the linker can understand which one it should use when mounting the code.
 
 #### Board dependencies
 
@@ -162,7 +162,7 @@ mkdir build
 cd build
 ```
 
-Compile both temperature sensor implementation
+Compile both temperature sensor implementations
 
 - Linux
 
@@ -196,7 +196,7 @@ To examine the content of the object file, use in Linux the command **nm** (simi
 nm pal_temperature_a.o
 ```
 
-The result shall be something like
+The result will look something like
 
 ```bash
                  U _GLOBAL_OFFSET_TABLE_
@@ -207,7 +207,7 @@ The result shall be something like
 
 If you are not familiar with the `nm` command, the `T` represents the symbols of the code in the _.text_ area in the object file, or the symbols exported by the object file, and the `U` represents undefined symbols that are expected by the object.
 
-It means that the object _pal\_temperature\_a.o_ exports the identifiers `pal_temperature_get`, `pal_temperature_to_celsius` and requests the implementation of `puts`. A similar result shall be obtained if you call `nm` for _pal\_temperature\_b.o_.
+It means that the object _pal\_temperature\_a.o_ exports the identifiers `pal_temperature_get`, `pal_temperature_to_celsius` and requests the implementation of  `puts`. A similar result shall be obtained if you call `nm` for _pal\_temperature\_b.o_.
 
 #### OS dependencies
 
@@ -219,13 +219,13 @@ To make it clear, look in the _pal\_thread\_pthread.c_. It includes _pthread.h_ 
 gcc -c ../pal/pal_thread_pthread.c
 ```
 
-shall create "pal_thread_pthread.o". However, execute the similar command on Linux for _pal\_thread\_windows.c_
+will create "pal_thread_pthread.o". However, execute the similar command on Linux for _pal\_thread\_windows.c_
 
 ```bash
 gcc -c ../pal/pal_thread_windows.c
 ```
 
-shall result in error.
+will result in error.
 
 ```bash
 ../pal/pal_thread_windows.c:1:10: fatal error: windows.h: No such file or directory
@@ -240,7 +240,7 @@ Examining the object file created from the compilation of _pal\_thread\_pthread.
 nm pal_thread_pthread.o
 ```
 
-shall result in,
+will result in,
 
 ```bash
                  U _GLOBAL_OFFSET_TABLE_
@@ -253,11 +253,11 @@ As expected, _pal\_thread\_pthread.o_ exports `pal_sleep` and requests an implem
 
 #### Other Dependencies
 
-The system may have other dependencies, for example the way that it halt in case of a critical error. It is better to keep it in the PAL layer, even if the current implementation work for all platforms, it will facilitate change if a new platform requires a different implementation in the future. Better safe than sorry.
+The system may have other dependencies such as the way that it halts in case of a critical error. Keeping these in the PAL will facilitate change if a new platform requires a different implementation in the future, even if the current implementation works for all platforms.
 
 ### Creating the PAL Libraries
 
-Up to now, we build our `.c` files directly using _gcc_ or _cl_, and we didn't link it to create a library or a executable. Now, let's move to cmake and create a project that will compile the `.c` files and link the object files creating a static library. CMake uses `CMakeLists.txt` to define the project. The PAL `CMakeLists.txt` shall create 3 libraries, one for each board, and it shall choose the right thread library to compile and link, depending on the OS.
+Up to now, we build our `.c` files directly using _gcc_ or _cl_, and we didn't link it to create a library or a executable. Now, let's move to cmake and create a project that will compile the `.c` files and link the object files creating a static library. CMake uses `CMakeLists.txt` to define the project. The PAL `CMakeLists.txt` will create 3 libraries, one for each board, and it shall choose the right thread library to compile and link, depending on the OS.
 
 CMake is a very powerful tool. For this sample, we will use only the ability to set variables, create projects, and do some glue logic.
 
@@ -265,7 +265,7 @@ CMake is a very powerful tool. For this sample, we will use only the ability to 
 
 The set of `.c` files that will compose each library shall be enough to cover all APIs exposed by the header `pal.h`. In our case, it needs one adapter for the temperature sensor, fan, led, exception, and thread. The definition of these configurations are in the `config.cmake`. A `.cmake` file is a file that can be included in any `CMakeLists.txt` to export variables or functions. In this sample, the `config.cmake` exposes the list of configurations and the functions to create samples and tests.
 
-Observe that we defined all possible configurations in the `config.cmake`, independent of the OS. As a convention, we define configurations `pal_win_x` for windows, and `pal_linux_x` for windows.
+Observe that we defined all possible configurations in the `config.cmake`, independent of the OS. As a convention, we define configurations `pal_win_x` for Windows, and `pal_linux_x` for Linux.
 
 ```cmake
 list(APPEND pal_win_1
@@ -288,7 +288,7 @@ list(APPEND pal_linux_1
 
 To define which configurations are valid for each OS, we created a list called `pal_libraries` that contains all libraries that the cmake shall create and test.
 
-CMake has a few build variables (a full documentation can be find at [https://cmake.org/documentation/](https://cmake.org/documentation/)). For the purpose of this sample, we will test if the build variable `WIN32` was defined or not (as you can presume, this variable only exists if you are running the cmake on a Windows machine).
+CMake has a few build variables (the full documentation can be found at [https://cmake.org/documentation/](https://cmake.org/documentation/)). For the purpose of this sample, we will test if the build variable `WIN32` is defined or not (as you can presume, this variable only exists if you are running the cmake on a Windows machine).
 
 ```cmake
 if(WIN32)
@@ -306,7 +306,7 @@ else()
 endif()
 ```
 
-So if `WIN32` is defined, `pal_libraries` will contain _pal_win_1_, _pal_win_2_, and _pal_win_3_, if not, this variable will contain _pal_linux_1_, _pal_linux_2_, and _pal_linux_3_. Other configurations may be necessary, for example, if you are using Clang as your compiler, you will need to make a more complex decision, because Clang uses pthread library on both Linux and Windows. If it is the case, the reliable way is to use the cmake variable `CMAKE_C_COMPILER_ID`.
+So if `WIN32` is defined, `pal_libraries` will contain _pal_win_1_, _pal_win_2_, and _pal_win_3_, if not, this variable will contain _pal_linux_1_, _pal_linux_2_, and _pal_linux_3_. Other configurations may be necessary. For example, if you are using Clang as your compiler, you will need to make a more complex decision because Clang uses the pthread library on both Linux and Windows. If this is the case, the most reliable way is to use the cmake variable `CMAKE_C_COMPILER_ID`.
 
 #### Including `config.cmake`
 
@@ -319,7 +319,7 @@ include(config)
 
 #### CMake hierarchy
 
-CMake works with hierarchy of directories, so, build a `CMakeLists.txt` will include all `CMakeLists.txt` included by **add_subdirectory**. The `CMakeLists.txt` in the root include the PAL, monitor, tests and samples.
+CMake works with hierarchy of directories, so, building a `CMakeLists.txt` will include all `CMakeLists.txt` included by **add_subdirectory**. The `CMakeLists.txt` in the root include the PAL, monitor, tests and samples.
 
 ```cmake
 add_subdirectory(pal)
@@ -330,7 +330,7 @@ add_subdirectory(device)
 
 #### Building libraries
 
-The `CMakeLists.txt` in the pal directory is responsible to build all the libraries in the `pal_libraries` list, it is done by interacting over the list and calling the cmake command **add_library**.
+The `CMakeLists.txt` in the pal directory is responsible for building all the libraries in the `pal_libraries` list, it is done by iterating over the list and calling the cmake command **add_library**.
 
 ```cmake
 foreach(pal IN LISTS pal_libraries)
@@ -345,17 +345,17 @@ foreach(pal IN LISTS pal_libraries)
 endforeach()
 ```
 
-The **add_library** instruct cmake to create a new project for a library with the name defined by the first argument and including all the files defined by the subsequent arguments. Because `pal_libraries` is a list of lists, each iteration of the `foreach` will return one list, that contains the configuration name, defined by `${pal}`, with all files that compose it, defined by `${${pal}}`. The **target_compile_definitions** bypass the PAL version to the code.
+The **add_library** instructs cmake to create a new project for a library with the name defined by the first argument and including all the files defined by the subsequent arguments. Because `pal_libraries` is a list of lists, each iteration of the `foreach` will return one list, that contains the configuration name, defined by `${pal}`, with all files that compose it, defined by `${${pal}}`. The **target_compile_definitions** bypass the PAL version to the code.
 
 To make the sample cleaner, let's isolate the Linux and Windows build directories. To do that, let's create a work directory inside the repo with a name related to the OS, for example "cmake-linux" and "cmake-win". Note that anything started with `cmake-` will be ignored by GIT in our repo (it is in _.gitignore_).
 
-Go inside of the new "cmake-{OS}" and execute cmake for the root directory (the next steps are in a Linux machine, but a similar result shall be obtained from a Windows one).
+Go inside of the new "cmake-{OS}" and execute cmake for the root directory (the next steps are in a Linux machine, but a similar result will be obtained from a Windows one).
 
 ```bash
 cmake ..
 ```
 
-As a result, cmake shall create a few files and directories, including the _make files_ that contain the project in the target compiler format. You can see that it creates the project for 3 libraries.
+As a result, cmake will create a few files and directories, including the _make files_ that contain the project in the target compiler format. You can see that it creates the project for 3 libraries.
 
 ```bash
 -- creating library pal_linux_1[pal_version.c;pal_temperature_a.c;pal_led.c;pal_fan_a.c;pal_exception.c;pal_thread_pthread.c]
@@ -369,7 +369,7 @@ Now we can build the project itself.
 cmake --build .
 ```
 
-As you can note in the cmake logs, cmake built each of the `.c` that each config library needed, and linked it together creating three static libraries,
+As you can see in the cmake logs, cmake built each of the `.c` that each config library needed and linked them together creating three static libraries.
 
 ```bash
 Scanning dependencies of target pal_linux_3
@@ -400,13 +400,13 @@ Scanning dependencies of target pal_linux_1
 [ 56%] Linking C static library libpal_linux_1.a
 ```
 
-If you would like to investigate the cmake build process, you can turn on the building logs, by setting the variable `CMAKE_VERBOSE_MAKEFILE` in the root _CMakeList.txt_ to **on**.
+If you would like to investigate the cmake build process, you can turn on the building logs by setting the variable `CMAKE_VERBOSE_MAKEFILE` in the root _CMakeList.txt_ to **on**.
 
 ```cmake
 set(CMAKE_VERBOSE_MAKEFILE on)
 ```
 
-With it, you will see that cmake is calling the compiler, for example **cc** on linux, to build each source code.
+Here you will see that cmake is calling the compiler, in this case, **cc** on linux, to build each source code.
 
 ```bash
 cc -o <source1>.a.o -c <source1>.c
@@ -414,13 +414,13 @@ cc -o <source2>.a.o -c <source2>.c
 ...
 ```
 
-And, at the end, it links all together creating the library, for example, using **ar** command in linux.
+At the end, it links everything together creating the library, in this case, using **ar** command in linux.
 
 ```bash
 ar qc lib<mylib>.a <source1>.c.o <source2>.c.o ...
 ```
 
-CMake will do that for all 3 libraries, resulting in the following files and directories in the _cmake-linux/pal_
+CMake will do this for all 3 libraries, resulting in the following files and directories in the _cmake-linux/pal_:
 
 ```bash
     ./
@@ -497,7 +497,7 @@ pal_thread_pthread.c.o:
     </tr>
 </table>
 
-As expected, because the implementation are very similar, all libraries implemented the same symbols, and expected that some other library implement the missing symbols `printf` and `nanosleep`.
+As expected, because the implementations are very similar, all libraries implement the same symbols and expect that some other library implements the missing symbols `printf` and `nanosleep`.
 
 ## Using the PAL
 
@@ -505,7 +505,7 @@ As expected, because the implementation are very similar, all libraries implemen
 
 #### Structure of the device
 
-The PAL libraries is used by the _monitor_ code that implement the business logic described in the scenario. However, it can be accessed by other parts of the system as well. The following diagram represent the _Device_ stack.
+The PAL libraries are used by the _monitor_ code that implements the business logic described in this scenario. However, it can be accessed by other parts of the system as well. The following diagram represent the _Device_ stack:
 
 ```
 +-------------------------------------------------+
@@ -529,7 +529,7 @@ The `main()` function in the _Device_ implements a simple loop that calls the `t
 
 #### How the add_device() works
 
-Each device that this sample will create shall be composed by one of the PAL libraries, the monitor library, that implements the business logic, and the main object, that contains the infinite loop that will run the system. The device executable is created by the function `add_device()` implemented in _cmake/config.cmake_, which is called by the `CMakeLists.txt` in the _device_ directory, once for each library pal library in pal_libraries list.
+Each device that this sample will create shall be composed by one of the PAL libraries, the monitor library which implements the business logic, and the main object which contains the infinite loop that will run the system. The device executable is created by the function `add_device()` implemented in _cmake/config.cmake_, which is called by the `CMakeLists.txt` in the _device_ directory, once for each library pal library in pal_libraries list.
 
 The `add_device()` will create a new executable named <i>device_{library_name}</i> with one object file created from _main.c_, by calling `add_executable()`.
 
@@ -539,7 +539,7 @@ The `add_device()` will create a new executable named <i>device_{library_name}</
     )
 ```
 
-CMake will build all `.c` in the `add_executable`, converting it in a object file, for example, in Linux, the _main.c_ will be builded in _main.c.o_. Those `.c` may need some includes, `target_include_directories()` will point where the include files shall be found.
+CMake will build all `.c`'s in the `add_executable`, converting them into an object file. For example, in Linux, the _main.c_ will be built in _main.c.o_. Those `.c`'s may need some includes. `target_include_directories()` will point where the include files can be found.
 
 ```cmake
     target_include_directories(${TARGET_NAME} 
@@ -550,7 +550,7 @@ CMake will build all `.c` in the `add_executable`, converting it in a object fil
     )
 ```
 
-And cmake needs to know what are the libraries that the linker shall link together with object main.o, and what is the **sequency** to include this libraries, `add_device()` do that by calling `target_link_libraries()`.
+CMake needs to know the libraries that the linker will link together with object main.o and the **sequence** to include this libraries in. `add_device()` does this by calling `target_link_libraries()`.
 
 ```cmake
     target_link_libraries(${TARGET_NAME} 
@@ -560,7 +560,7 @@ And cmake needs to know what are the libraries that the linker shall link togeth
     )
 ```
 
-The combination of `add_executable()` and `target_include_directories()` commands, will provide 3 files for the linker as following (let's examine only the libpal_linux_1, the others one are similar to that).
+The combination of the `add_executable()` and `target_include_directories()` commands, will provide 3 files for the linker as following. Let's examine libpal_linux_1 (the others are similar to this one).
 
 <table>
     <tr>
@@ -635,15 +635,15 @@ T pal_sleep
     </tr>
 </table>
 
-#### How linker will attach all together
+#### How linker will attach everything together
 
-One of the biggest difference between link a object file (.o) and a static library (.a) is the way that linker look for the symbols. As a general ruler, linker will add all symbols in a object file to the linker table and make the code available, no matter if some other code need it or not. At the end, if a function is not used, the linker will remove it from the binary to save some space (there are some exceptions, developers can ask the linker to keep a function even if nobody is using it).
+One of the biggest differences between linking an object file (.o) and a static library (.a) is the way that linker looks for the symbols. As a general rule, the linker will add all symbols in an object file to the linker table and make the code available whether or not some other code needs it. If a function is not used in the end, the linker will remove it from the binary to save space. There are some exceptions to this rule... Developers can ask the linker to keep a function even if it is not being used.
 
-For a static library, the linker will not do that, instead, it will try to find the symbols that are already in the link table without code, and see if the static library implements it. If the static library implements it, the linker will use the object file that contains that implementation and mark that symbol as implemented.
+The linker will not do this for a static library. Instead it will try to find the symbols that are already in the linker table without code and see if the static library implements it. If the static library implements it, the linker will use the object file that contains that implementation and mark that symbol as implemented.
 
 Let's see it step by step, we will concentrate only in the relevant parts of the linker:
 
-First, linker will include the object files, in this sample, we only have main.c.o. The only code already implemented is the `main()` function.
+First, the linker will include the object files. In this sample we only have main.c.o. The only code already implemented is the `main()` function.
 
 ```
 Symbol                              Required by                             Implemented by
@@ -657,7 +657,7 @@ U printf                            main.c.o
 U temperature_monitor               main.c.o
 ```
 
-After that, the linker will start with the static libraries, using the order in the `target_link_libraries()`. So, it will start with the _libmonitor.a_. This library implements the function `temperature_monitor()` that is currently in the link table, but without code. So, the linker will bring the entire monitor.c.o to the table.
+After that, the linker will start with the static libraries, using the order in the `target_link_libraries()`. So it will start with the _libmonitor.a_. This library implements the function `temperature_monitor()` that is currently in the linker table, but without code. So, the linker will bring the entire monitor.c.o to the table.
 
 ```
 Symbol                              Required by                             Implemented by
@@ -674,7 +674,7 @@ U printf                            main.c.o
 T temperature_monitor               main.c.o                                monitor.c.o
 ```
 
-The next library is libpal_linux_1.a, because of pal_fan_set_speed, the linker will brings the pal_fan_a.c.o, because of the pal_halt, the pal_exception.c.o, and so on.
+The next library is libpal_linux_1.a. Because of pal_fan_set_speed, the linker will bring the pal_fan_a.c.o because of the pal_halt, the pal_exception.c.o, and so on.
 
 ```
 Symbol                              Required by                             Implemented by
@@ -696,9 +696,9 @@ U printf                            main.c.o, pal_fan_a.c.o,                @@GL
 T temperature_monitor               main.c.o                                monitor.c.o
 ```
 
-Both missing symbols now belong to the standard C library and will be dynamically linked by the OS (_GLIBC_ on linux), we will not cover it in this sample.
+Both missing symbols now belong to the standard C library and will be dynamically linked by the OS (_GLIBC_ on linux). We will not cover this in this sample.
 
-As the last steep, linker may remove all unused symbols.
+As the last step, the linker may remove all unused symbols.
 
 #### Linker order
 
@@ -712,7 +712,7 @@ The above information shows that the order of the libraries is essential in the 
     )
 ```
 
-After grab all the object files, the first library that the linker will add will be the libpal_linux_1.a, bringing the objects for the pal_xxx functions required by the `main()` function.
+After grabbing all the object files, the first library that the linker will add will be the libpal_linux_1.a, bringing the objects for the pal_xxx functions required by the `main()` function.
 
 ```
 Symbol                              Required by                             Implemented by
@@ -730,7 +730,7 @@ U printf                            main.c.o, pal_temperature_a.c.o
 U temperature_monitor               main.c.o
 ```
 
-Now, linker will bring the `libmonitor.a`.
+Now, linker will bring in the `libmonitor.a`.
 
 ```
 Symbol                              Required by                             Implemented by
@@ -751,7 +751,7 @@ U printf                            main.c.o, pal_temperature_a.c.o         @@GL
 T temperature_monitor               main.c.o                                monitor.c.o
 ```
 
-As a result, at the end of the link process, the functions `pal_fan_set_speed()`, `pal_halt()`, `pal_led_set_color()` are not implemented by any object, and the linker will throw an error.
+At the end of the linking process, the functions `pal_fan_set_speed()`, `pal_halt()`, `pal_led_set_color()` are not implemented by any object, and the linker will throw an error.
 
 ```bash
 /usr/bin/ld: ../monitor/libmonitor.a(monitor.c.o): in function `temperature_monitor':
@@ -767,7 +767,7 @@ monitor.c:(.text+0x61): undefined reference to `pal_halt'
 clang: error: linker command failed with exit code 1 (use -v to see invocation)
 ```
 
-> **_Note:_** Some linkers resolve it by revisiting the static libraries multiple times. But there is no guarantees about it.
+> **_Note:_** Some linkers resolve this by revisiting the static libraries multiple times. However, this cannot be guaranteed.
 
 ### The Contract
 
@@ -775,17 +775,17 @@ Because the `pal.h` exposes a single interface for all PAL libraries, there is n
 
 #### Versioning
 
-The most important part of any contract is the clauses that make clear the responsibilities of for both sides. In our case, we call it as **requirements**. Write software requirements is not fun, it is a tedious process that many developers avoid as much as possible, however, it is the only way to have a good contract that will guide all the tests for the interface. The requirements shall describe what the code **shall** and **shall not** do.
+The most important part of any contract is the clauses that make the responsibilities clear for both sides. We call these responsibilities **requirements**. Writing software requirements is not fun. It is a tedious process that many developers avoid as much as possible. However, it is the only way to have a good contract that will guide all the tests for the interface. The requirements describe what the code **shall** and **shall not** do.
 
-Another important point about the requirements is the evolution of it. A good contract **shall not** change along the time. Change an interface requirement is knowing as **breaking change** and cause damage to codes that use it. On the other hand, freeze the requirements, will freeze the software evolution.
+Another important point about the requirements is their evolution. A good contract **shall not** change over time. Changing an interface requirement is known as a **breaking change** and causes damage to codes that use it. On the other hand, freezing the requirements will freeze the software evolution.
 
 To solve this dilemma, a good contract shall have version. A good semantic for a version splits it in 3 parts.
 
-1. _major_: New version that can be incompatible with the previews one and may contain **breaking changes**.
-2. _minor_: It represents a significant increment in the API, but without breaking changes.
-3. _patch_: Small fix in the code.
+1. _major_: A new version that may be incompatible with the previous one and may contain **breaking changes**.
+2. _minor_: A significant increment in the API, but without breaking changes.
+3. _patch_: A small fix to the code.
 
-This sample uses this semantic, with a single version for all PAL libraries. The version is defined in the `config.cmake` and passed down to the PAL code using the `target_compile_definitions` in the PAL `CMakeLists.txt`.
+This sample uses this semantic with a single version for all PAL libraries. The version is defined in the `config.cmake` and passed down to the PAL code using the `target_compile_definitions` in the PAL `CMakeLists.txt`.
 
 ```cmake
     target_compile_definitions(${pal} PUBLIC 
@@ -794,7 +794,7 @@ This sample uses this semantic, with a single version for all PAL libraries. The
         "PAL_VERSION_PATCH=${PAL_VERSION_PATCH}")
 ```
 
-Because version is constant in the PAL, developers may be tented to expose it in the `pal.h`, something like this:
+Because version is constant in the PAL, developers may be tempted to expose it in the `pal.h`, doing something like this:
 
 ```c
 const char* PAL_VERSION_STR = STR(PAL_VERSION_MAJOR) "." \
@@ -802,19 +802,19 @@ const char* PAL_VERSION_STR = STR(PAL_VERSION_MAJOR) "." \
                               STR(PAL_VERSION_PATCH);
 ```
 
-However, the `pal.h` may be included in the files that will use the library, and it will result in `PAL_VERSION_STR` as part of the _.text_ area of the user of the library not the _.text_ area of the library itself, which is very undesirable.
+However, the `pal.h` may be included in the files that will use the library, and this will result in `PAL_VERSION_STR` being part of the _.text_ area of the user of the library and not the _.text_ area of the library itself, which is undesirable.
 
-To make sure that this sample avoid this bad behavior, the PAL `CMakeLists.txt` uses `target_compile_definitions` instead of `add_definitions`. In this case, if a developer try to use the version constant directly, for instance the `PAL_VERSION_MAJOR`, the compiler will throw an error because this symbol does not exists outside of the PAL library.
+To make sure that this sample avoids this bad behavior, the PAL `CMakeLists.txt` uses `target_compile_definitions` instead of `add_definitions`. In this case, if a developer tries to use the version constant directly, such as the `PAL_VERSION_MAJOR`, the compiler will throw an error because this symbol does not exist outside the PAL library.
 
-As a result, in the sample, we have the `pal_version.c` that will expose the version information to the system, keeping this information in the _.text_ area of the library. With it, users may test the PAL version to make sure that it is compatible with their current code.
+In this sample the `pal_version.c` will expose the version information to the system, keeping this information in the _.text_ area of the library. With this information, users may test the PAL version to make sure that it is compatible with their current code.
 
 #### Requirements
 
-Test the version can help to understand and keep track of possible breaking changes, so, it is essential that the users of an library keep tests that will test their code against the interface requirements.
+Testing the version can help the user understand and keep track of possible breaking changes. So it is essential that the users of a library maintain tests that will test their code against the interface requirements.
 
-Some developers like to create a requirement document, others, like myself, put the requirements as comments, together with the tests that check that requirement. No matter your stile, it is always a good idea to define all the requirements, and negotiate them with the other developers before start any implementation. **If you are discussing requirements in the code PR (Pull Request), you are wasting time and money**.
+Some developers like to create a requirements document. Others, like myself, state the requirements as comments together with the tests that check that requirement. No matter your style, it is always a good idea to define all the requirement and negotiate them with other developers on your project before starting any implementation. **If you are discussing requirements in the code PR (Pull Request), you are wasting time and money**.
 
-To demonstrate how to test the interface, we defined some requirements, it is a subset, far to cover the entire interface, but will help us to understand the interface test concept.
+To demonstrate how to test the interface, we defined some requirements. These are a subset, far from covering the entire interface, but they will help us understand the interface testing concept.
 
 ```c
 /** pal_temperature_get shall return the current temperature and PAL_OK. */
@@ -824,7 +824,7 @@ To demonstrate how to test the interface, we defined some requirements, it is a 
 /** pal_halt shall completely stop the system. */
 ```
 
-> **_Note:_** It is important to test all requirements, however, because it is related to the hardware, there will be cases that test a requirement is supper hard of even impossible, for example, the requirement related to "pal_halt".
+> **_Note:_** It is important to test all requirements. However, because these are related to the hardware, there will be cases that testing a requirement is incredibly challenging, if not impossible. For example, the requirement related to "pal_halt".
 
 The code that uses the interface shall have its own set of requirements, once again, here is a subset of it.
 
@@ -836,38 +836,38 @@ The code that uses the interface shall have its own set of requirements, once ag
 /** temperature_monitor shall set LED to red, turn fan off, and halt the system if the temperature if above 120.0c or if the temperature sensor failed to read the temperature. */
 ```
 
-> **_Note:_** The interface requirements shall guide the user's requirements, for example, every code that call `pal_temperature_get` shall test the success case, where it returns `PAL_OK`, but the fail case as well, where it returns `PAL_ERROR_ARG`.
+> **_Note:_** The interface requirements shall guide the user's requirements. For example, every code that calls `pal_temperature_get` shall test the success case, where it returns `PAL_OK`, but the fail case as well, where it returns `PAL_ERROR_ARG`.
 
 #### User test
 
-In this sample, _tests/temperature_monitor_ut.c_ is a set of unit tests that check the "temperature_monitor" and other device-related requirements. Some of these requirements can be tested in the device as is. However, most requirements, specially those requiring unit test, are better checked if the test has full control of the dependencies, in this case, the user's test shall have control on the results of the PAL.
+In this sample, _tests/temperature_monitor_ut.c_ is a set of unit tests that check the "temperature_monitor" and other device-related requirements. Some of these requirements can be tested in the device as is. However, most requirements, especially those requiring unit tests, are better checked if the test has full control of the dependencies. In this case, the user's test shall have control on the results of the PAL.
 
-PAL is related to the hardware, and control the hardware result using the hardware itself is hard and unreliable. The solution for that is **mock** the interface. To make things simple, this sample will mock the interface using the linker.
+PAL is related to the hardware, and controlling the hardware result using the hardware itself is hard and unreliable. The solution to this is to **mock** the interface. To make things simple, this sample will mock the interface using the linker.
 
 > **_Note:_** It is highly recommended that you use a mock framework like [umock-c](https://github.com/Azure/umock-c) or [cmocka](https://cmocka.org).
 
 Let's understand why we need to mock the interface. To do this, let's focus on the last _temperature_monitor_ requirement in the list above.
 
 ```c
-/** temperature_monitor shall set LED to red, turn fan off, and halt the system if the temperature is above 120.0c or if the temperature sensor failed to read the temperature. */
+/** temperature_monitor shall set the LED to red, turn the fan off, and halt the system if the temperature is above 120.0c or if the temperature sensor failed to read the temperature. */
 ```
 
-As result of this requirement, the system shall goes to a full stop state. Some systems will allow developers to test the full stop using a system error that will result in a call to a halt function that the BSP will implement as an infinite loop. These systems allows developers to overwrite this halt functions to have something that the test can check instead of halting the device. The issue with this approach is those halt functions are platform-dependent, and will require one test implementation for each platform, which we what to avoid. So, mock the `pal_halt()` will create a way to check if the halt was called without really stop the system.
+As result of this requirement, the system shall go to a full stop state. Some systems will allow developers to test the full stop using a system error that will result in a call to a halt function that the BSP will implement as an infinite loop. These systems allows developers to overwrite this halt functions to have something that the test can check instead of halting the device. The issue with this approach is those halt functions are platform-dependent, and will require one test implementation for each platform, which we what to avoid. So, mocking the `pal_halt()` will create a way to check if the halt was called without really stopping the system.
 
-Another issue, is how to trigger these requirements. It can be triggered by a high temperature on the sensor or a fault in the temperature reader. Activate these situations using the hardware will require changes in the circuit and addition of other devices, such as a heater. Nobody wants it!
+Another issue is how to trigger these requirements. They can be triggered by a high temperature on the sensor or a fault in the temperature reader. Activating these situations using the hardware will require changes in the circuit and addition of other devices, such as a heater. Nobody wants this!
 
-So, mock the `pal_temperature_get()` will allow the test to define the correct behavior to trigger the test.
+So, mocking the `pal_temperature_get()` will allow the test to define the correct behavior to trigger the test.
 
-But, the trick here is how to do that. We saw that we can define in the liker each PAL library the application shall use. However, in the unit tests, we want to replace only part of the library. For example, there is no reason to replace the `pal_sleep()` function.
+But, the trick here is how to do this. We saw that we can define each PAL library the application will use in the linker. However we want to replace only part of the library in the unit tests. For example, there is no reason to replace the `pal_sleep()` function.
 
-The good news is, because PAL is a static library, linker will help us in this task. Let's remember 2 rules about how linker uses static libraries.
+The good news is, because the PAL is a static library, the linker will help us with this task. Let's remember 2 rules about how the linker uses static libraries.
 
-1. Linker will only add symbols from the static library if this symbol is in the linker table waiting for an implementation.
-2. If at least one symbol is required from an object in the static library, linker will bring all symbols of that object to the table.
+1. The linker will only add symbols from the static library if this symbol is in the linker table waiting for an implementation.
+2. If at least one symbol is required from an object in the static library, the linker will bring all symbols of that object to the table.
 
-The first rule will help to mock the pal functions, if the test contains an implementation for all needed functions from a particular object in the static library, the linker will ignore that object. However, the second rule tells that we must make sure that we are not using any function in that particular object in the library, if we use any symbol from the object, linker will bring the entire object, resulting in linker error of multiple implementations of the same symbol. So, when define the test, developers shall decide each objects will be used from the static library and each ones will be mocked.
+The first rule will help mock the pal functions. If the test contains an implementation for all needed functions from a particular object in the static library, the linker will ignore that object. However, the second rule states that we must make sure that we are not using any function in that particular object in the library. If we use any symbol from the object, the linker will bring the entire object, resulting in a linker error of multiple implementations of the same symbol. So, when defining the test, developers should decide which objects will be used from the static library and which ones will be mocked.
 
-So, targeting the sample, to do the unit test for `temperature_monitor`, we decided to mock functions `pal_led_set_color()`, `pal_temperature_get()`, `pal_temperature_to_celsius()`, `pal_fan_set_speed()`, and `pal_halt()` and use the version functions and `pal_sleep()` from the pal library as is. So, if you look at the _temperature\_monitor\_ut.c_, at the beginning, there is a session with the mock implementation of the pal, it is below the comment:
+So, targeting the sample to perform a unit test for `temperature_monitor`, we decide to mock functions `pal_led_set_color()`, `pal_temperature_get()`, `pal_temperature_to_celsius()`, `pal_fan_set_speed()`, and `pal_halt()`, and use the version functions and `pal_sleep()` from the pal library as is. So, if you look at the _temperature\_monitor\_ut.c_, at the beginning, there is a session with the mock implementation of the pal below the following comment:
 
 ```c
 /**
@@ -888,7 +888,7 @@ This is the mock pal_halt... HALT!
 Succeeded
 
 ```
-To test the second ruler, you can comment the `pal_temperature_to_celsius()`
+To test the second rule, you can comment the `pal_temperature_to_celsius()`
 
 ```c
 // float pal_temperature_to_celsius(unsigned short temperature) {
@@ -909,13 +909,13 @@ make[1]: *** [CMakeFiles/Makefile2:380: tests/CMakeFiles/temperature_monitor_ut.
 make: *** [Makefile:103: all] Error 2
 ```
 
-> **_Note:_** The trick about this issue is the function that cause the problem is not the one reported in the error. So, to fix the double definition, we need to investigate the other functions in the object, besides the one reported in the error.
+> **_Note:_** The trick with this issue is the function that causes the problem is not the one reported in the error. So, to fix the double definition, we need to investigate the other functions in the object, besides the one reported in the error.
 
 #### Compliance Test
 
 Now that we know that our code works with the PAL, following the defined contract, we have to ensure that all PAL libraries, independent of the platform, have the same behavior. This is done by the **compliance test**.
 
-The cmake files created for this sample will always create a library for each PAL listed in _pal\_libraries_, and the function `add_compliance_test()` will test each library against the compliance test _pal\_compliance\_ut.c_. So, after build the sample, besides the _temperature\_monitor\_ut_, there will be 3 compliance tests in the _tests_ directory.
+The cmake files created for this sample will always create a library for each PAL listed in _pal\_libraries_, and the function `add_compliance_test()` will test each library against the compliance test _pal\_compliance\_ut.c_. So, after building the sample, besides the _temperature\_monitor\_ut_, there will be 3 compliance tests in the _tests_ directory.
 
 ```bash
 ./
@@ -929,7 +929,7 @@ pal_linux_3_compliance_ut
 temperature_monitor_ut
 ```
 
-These tests will run the PAL APIs against the PAL contract, executing the _pal_linux_1_compliance_ut_ the result will shown that there are no errors, which means that the _pal_linux_1.a_ is in compliance with the PAL contract and can be used in the system.
+These tests will run the PAL APIs against the PAL contract, executing the _pal_linux_1_compliance_ut_. The result will shown that there are no errors, which means that the _pal_linux_1.a_ is in compliance with the PAL contract and can be used in the system.
 
 ```bash
 Starting unit tests:
@@ -954,7 +954,7 @@ Succeeded
 End unit tests with 0 errors
 ```
 
-However, it is not true for _pal_linux_3_compliance_ut_, in fact, the fan **C** does not runs in anticlockwise. You can see that the last test returns an error.
+However, this is not true for _pal_linux_3_compliance_ut_, in fact, the fan **C** does not run counterclockwise. You can see that the last test returns an error.
 
 ```bash
  Starting unit tests:
@@ -978,9 +978,9 @@ pal_fan_set_speed return failed. Expected:PAL_OK Actual:2
 End unit tests with 1 errors
 
 ```
-The interesting part about it, is all 3 libraries expose the correct signature, and in a simple test, using only clockwise speeds on the fan, they will all succeed. But, if you deploy the device in the field using the 3rd library, soon or latter, it will fail.
+The interesting part about this is that all 3 libraries expose the correct signature and, in a simple test using only clockwise speeds on the fan, they will all succeed. But if you deploy the device in the field using the 3rd library, it will fail sooner or later.
 
-So, a few important rulers about the compliance test:
+So we have a few important rules about compliance tests:
 
 1. Always create libraries for settings and include the `.a` or `.lib` to the project, never include a `.c` file from the PAL directly to the project.
 2. If you need a different configuration, create a library for that.
@@ -988,6 +988,6 @@ So, a few important rulers about the compliance test:
 
 ## Conclusion
 
-We show with this sample that it is possible to create and test multiple platform adapters for a device and build it all using a simple set of cmake files. This sample runs properly in Linux and Windows, using different implementations for possible hardware on the device.
+In this sample we show that it is possible to create and test multiple platform adapters for a device and build them all using a simple set of cmake files. This sample runs properly in Linux and Windows using different implementations for possible hardware on the device.
 
-A compliance test made sure that all versions of the PAL that will be deployed works properly, and shown that the 3rd configuration, despite the fact that it works fine in a simple test, shall not be used.
+A compliance test made sure that all versions of the PAL that will be deployed work properly, and shoed that the 3rd configuration, despite the fact that it works fine in a simple test, shall not be used.
